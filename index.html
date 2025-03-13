@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinball Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Ball properties
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            dx: 2,
+            dy: -2,
+            color: 'white'
+        };
+
+        // Platform properties
+        const platforms = [
+            { x: 100, y: 300, width: 100, height: 10, color: 'red', dx: 0 },
+            { x: 300, y: 500, width: 100, height: 10, color: 'red', dx: 0 }
+        ];
+
+        // Draw ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw platforms
+        function drawPlatforms() {
+            platforms.forEach(platform => {
+                ctx.fillStyle = platform.color;
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+        }
+
+        // Update ball position
+        function updateBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Bounce off walls
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx *= -1;
+            }
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            // Check for collisions with platforms
+            platforms.forEach(platform => {
+                if (ball.x > platform.x && ball.x < platform.x + platform.width &&
+                    ball.y + ball.radius > platform.y && ball.y - ball.radius < platform.y + platform.height) {
+                    ball.dy *= -1;
+                }
+            });
+        }
+
+        // Update platform positions and check for collisions
+        function updatePlatforms() {
+            platforms.forEach(platform => {
+                platform.x += platform.dx;
+
+                // Prevent platforms from moving out of bounds
+                if (platform.x < 0) {
+                    platform.x = 0;
+                } else if (platform.x + platform.width > canvas.width) {
+                    platform.x = canvas.width - platform.width;
+                }
+            });
+        }
+
+        // Handle keydown events
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                platforms[0].dx = -5;
+            } else if (e.key === 'ArrowRight') {
+                platforms[0].dx = 5;
+            } else if (e.key === 'a') {
+                platforms[1].dx = -5;
+            } else if (e.key === 'd') {
+                platforms[1].dx = 5;
+            } else if (e.key === ' ') {
+                ball.dy -= 5; // Impulse the ball upwards
+            }
+        });
+
+        // Handle keyup events
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                platforms[0].dx = 0;
+            } else if (e.key === 'a' || e.key === 'd') {
+                platforms[1].dx = 0;
+            }
+        });
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawPlatforms();
+            updateBall();
+            updatePlatforms();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>

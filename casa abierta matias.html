@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sitio Web de Arte - Muestra de Arte de Matias</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+    section {
+      padding: 20px;
+      text-align: center;
+    }
+    #section1, #section2, #section3 {
+      border-bottom: 2px solid #444;
+    }
+    h1 {
+      margin: 0;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sección 1: Título animado -->
+  <section id="section1">
+    <div id="sketch-title"></div>
+  </section>
+
+  <!-- Sección 2: Animación de 'Sonic' estilo ciberpunk y vaporwave -->
+  <section id="section2">
+    <div id="sketch-sonic"></div>
+  </section>
+
+  <!-- Sección 3: Minijuego - Muñeco en un laberinto -->
+  <section id="section3">
+    <div id="sketch-laberinto"></div>
+  </section>
+
+  <script>
+    // Sketch 1: Título animado con texto fluorescente y cambio de colores.
+    const sketchTitle = (p) => {
+      let hue = 0;
+      p.setup = function() {
+        const canvas = p.createCanvas(p.windowWidth, 200);
+        canvas.parent("sketch-title");
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(36);
+      };
+
+      p.draw = function() {
+        hue = (hue + 1) % 360;
+        p.background(20);
+        p.fill(p.color(`hsl(${hue}, 100%, 50%)`));
+        p.text("Muestra de Arte de Matias", p.width / 2, p.height / 2);
+      };
+
+      p.windowResized = function() {
+        p.resizeCanvas(p.windowWidth, 200);
+      };
+    };
+
+    // Sketch 2: Animación de "Sonic" (representado como un círculo neon) recorriendo las esquinas.
+    const sketchSonic = (p) => {
+      let pos, target;
+      let speed = 4;
+      let corners = [];
+      let currentCorner = 0;
+      
+      p.setup = function() {
+        const canvas = p.createCanvas(p.windowWidth, 300);
+        canvas.parent("sketch-sonic");
+        corners = [
+          p.createVector(20, 20),
+          p.createVector(p.width - 20, 20),
+          p.createVector(p.width - 20, p.height - 20),
+          p.createVector(20, p.height - 20)
+        ];
+        pos = corners[0].copy();
+        target = corners[1];
+      };
+
+      p.draw = function() {
+        p.background(10);
+        // Dibujar las esquinas
+        p.fill(100);
+        for(let v of corners){
+          p.circle(v.x, v.y, 10);
+        }
+        // Movimiento hacia el siguiente vértice
+        let direction = p5.Vector.sub(target, pos);
+        if(direction.mag() < speed){
+          pos = target.copy();
+          currentCorner = (currentCorner + 1) % corners.length;
+          target = corners[(currentCorner + 1) % corners.length];
+        } else {
+          direction.setMag(speed);
+          pos.add(direction);
+        }
+        // Dibuja "Sonic" estilo ciberpunk
+        p.fill(0, 255, 200);
+        p.stroke(255, 0, 255);
+        p.strokeWeight(3);
+        p.circle(pos.x, pos.y, 40);
+      };
+
+      p.windowResized = function() {
+        p.resizeCanvas(p.windowWidth, 300);
+        corners = [
+          p.createVector(20, 20),
+          p.createVector(p.width - 20, 20),
+          p.createVector(p.width - 20, p.height - 20),
+          p.createVector(20, p.height - 20)
+        ];
+      };
+    };
+
+    // Sketch 3: Minijuego - Muñeco en un laberinto
+    const sketchLaberinto = (p) => {
+      let maze = [
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1,1,1,1,0,1],
+        [1,0,1,0,0,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,1,0,1,0,1],
+        [1,1,1,1,1,1,0,1,0,1,0,1],
+        [1,0,0,0,0,1,0,0,0,1,0,1],
+        [1,0,1,1,0,1,1,1,0,1,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1]
+      ];
+      const rows = maze.length;
+      const cols = maze[0].length;
+      let cellSize;
+      let player = { row: 1, col: 1 };
+
+      p.setup = function() {
+        cellSize = p.windowWidth / cols;
+        const canvas = p.createCanvas(p.windowWidth, rows * cellSize);
+        canvas.parent("sketch-laberinto");
+        p.frameRate(10);
+      };
+
+      p.draw = function() {
+        p.background(50);
+        // Dibujar laberinto
+        for(let r = 0; r < rows; r++){
+          for(let c = 0; c < cols; c++){
+            if(maze[r][c] === 1){
+              p.fill(255, 0, 255);
+            } else {
+              p.fill(20);
+            }
+            p.stroke(0);
+            p.rect(c * cellSize, r * cellSize, cellSize, cellSize);
+          }
+        }
+        // Dibujar el muñeco (jugador)
+        p.fill(0, 255, 200);
+        p.noStroke();
+        let px = player.col * cellSize + cellSize / 2;
+        let py = player.row * cellSize + cellSize / 2;
+        p.ellipse(px, py, cellSize * 0.6, cellSize * 0.6);
+      };
+
+      p.keyPressed = function() {
+        let newRow = player.row;
+        let newCol = player.col;
+        if (p.keyCode === p.UP_ARROW) {
+          newRow--;
+        } else if (p.keyCode === p.DOWN_ARROW) {
+          newRow++;
+        } else if (p.keyCode === p.LEFT_ARROW) {
+          newCol--;
+        } else if (p.keyCode === p.RIGHT_ARROW) {
+          newCol++;
+        }
+        // Verificar colisión con paredes (valor 1)
+        if(maze[newRow] && maze[newRow][newCol] === 0){
+          player.row = newRow;
+          player.col = newCol;
+        }
+      };
+
+      p.windowResized = function() {
+        cellSize = p.windowWidth / cols;
+        p.resizeCanvas(p.windowWidth, rows * cellSize);
+      };
+    };
+
+    // Crear instancias de p5 en cada contenedor
+    new p5(sketchTitle, 'sketch-title');
+    new p5(sketchSonic, 'sketch-sonic');
+    new p5(sketchLaberinto, 'sketch-laberinto');
+  </script>
+</body>
+</html>
